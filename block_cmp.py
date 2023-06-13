@@ -56,7 +56,8 @@ class PCBComponents:
     def __init__(self):
         self.board=pcbnew.GetBoard()
     def FindPosition(self,name):
-        mod=self.board.FindModuleByReference(name)
+        self.board=pcbnew.GetBoard()
+        mod=self.board.FindFootprintByReference(name)
         if(mod==None):
             print("Module {} was not found".format(name))
             return 0,0,0
@@ -65,39 +66,40 @@ class PCBComponents:
         orient=0
         return x,y,orient
     def FindShape(self,name):
-        mod=self.board.FindModuleByReference(name)
+        mod=self.board.FindFootprintByReference(name)
         x=[]
         y=[]
         if(mod==None):
             print("Module {} was not found".format(name))
             return x,y
-        polyx=mod.GetBoundingPoly()
-        linech=polyx.Outline(0)
-        for nmv in range(linech.PointCount()):
-            x.append(linech.Point(nmv).x)
-            y.append(linech.Point(nmv).y)
+        polyx=mod.GetBoundingHull()
+#        linech=polyx.Outline(0)
+        for nmv in range(polyx.VertexCount()):
+            nn=polyx.CVertex(nmv)
+            x.append(nn.x)
+            y.append(nn.y)
             
         return x,y
     def SetNewPosition(self,name,x,y,orient):
-        mod=self.board.FindModuleByReference(name)
+        mod=self.board.FindFootprintByReference(name)
         if(mod==None):
             print("Module {} was not found".format(name))
             return
         point=pcbnew.wxPoint(0,0)
         point.x=x
         point.y=y
-        mod.SetPosition(point)
-        mod.SetOrientation(orient)
+        mod.SetPosition(pcbnew.VECTOR2I(point))
+        mod.SetOrientation(pcbnew.EDA_ANGLE(orient,pcbnew.DEGREES_T))
         
     def OnlyOrientation(self,name,orient):
-        mod=self.board.FindModuleByReference(name)
+        mod=self.board.FindFootprintByReference(name)
         if(mod==None):
             print("Module {} was not found".format(name))
             return
-        mod.SetOrientation(orient)
+        mod.SetOrientation(pcbnew.EDA_ANGLE(orient,pcbnew.DEGREES_T))
         
     def Flip(self,name):
-        mod=self.board.FindModuleByReference(name)
+        mod=self.board.FindFootprintByReference(name)
         if(mod==None):
             print("Module {} was not found".format(name))
             return
@@ -116,6 +118,7 @@ class InsertComponents:
         self.NewPosition=[]
         self.CompArea=[]
         self.fp=PCBComponents()
+
  
     def ReadParams(self,name,start_r,end_r,x,y,orient):
         del self.OldPosition[:]
@@ -137,7 +140,7 @@ class InsertComponents:
         self.NewPosition[:]
         x=x*1000000
         y=y*1000000
-        orient=orient*10
+#        orient=orient*10
         space=space*1000000
         if len(self.OldPosition)==0:
             print("Any components was found")
@@ -159,7 +162,7 @@ class InsertComponents:
         self.NewPosition[:]
         x=x*1000000
         y=y*1000000
-        orient=orient*10
+#        orient=orient*10
         space=space*1000000
         if len(self.OldPosition)==0:
             print("Any components was found")
@@ -255,5 +258,7 @@ def FlipBlock(name,start_r,end_r):
         
         
 
+
+    
 
     
