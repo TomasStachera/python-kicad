@@ -7,13 +7,14 @@ g_starty=0
 g_width=0
 g_height=0
 
-footprint_lib = 'C:/Program Files/KiCad/share/kicad/modules/MountingHole.pretty'
+footprint_lib = 'C:/Program Files/KiCad/7.0/share/kicad/footprints/MountingHole.pretty'
 hole_type="MountingHole_3.2mm_M3"
 
 
 # most queries start with a board
 def GetCoordinates(pos):
-    return pos*1000000
+#    return pos*1000000
+    return pos
 #Function draw bounding area
 #1.parameter: startx: Start corner x-coordinates
 #2.parameter: starty: Start corner y=coordinates
@@ -31,27 +32,31 @@ def DrawBounding(startx,starty,width,height):
      global g_height
      g_height=height
    
-     ds=pcbnew.DRAWSEGMENT(board)
-     ds.SetStart(pcbnew.wxPoint(GetCoordinates(startx),GetCoordinates(starty)))
-     ds.SetEnd(pcbnew.wxPoint(GetCoordinates(startx+width),GetCoordinates(starty)))
+     ds=pcbnew.PCB_SHAPE(board)
+     ds.SetStart(pcbnew.VECTOR2I_MM(GetCoordinates(startx),GetCoordinates(starty)))
+     ds.SetEnd(pcbnew.VECTOR2I_MM(GetCoordinates(startx+width),GetCoordinates(starty)))
+     ds.SetLayer(pcbnew.Edge_Cuts)
      ds.SetWidth(board_width)
      board.Add(ds)
      
-     ds=pcbnew.DRAWSEGMENT(board)
-     ds.SetStart(pcbnew.wxPoint(GetCoordinates(startx+width),GetCoordinates(starty)))
-     ds.SetEnd(pcbnew.wxPoint(GetCoordinates(startx+width),GetCoordinates(starty+height)))
+     ds=pcbnew.PCB_SHAPE(board)
+     ds.SetStart(pcbnew.VECTOR2I_MM(GetCoordinates(startx+width),GetCoordinates(starty)))
+     ds.SetEnd(pcbnew.VECTOR2I_MM(GetCoordinates(startx+width),GetCoordinates(starty+height)))
+     ds.SetLayer(pcbnew.Edge_Cuts)
      ds.SetWidth(board_width)
      board.Add(ds)
      
-     ds=pcbnew.DRAWSEGMENT(board)
-     ds.SetStart(pcbnew.wxPoint(GetCoordinates(startx+width),GetCoordinates(starty+height)))
-     ds.SetEnd(pcbnew.wxPoint(GetCoordinates(startx),GetCoordinates(starty+height)))
+     ds=pcbnew.PCB_SHAPE(board)
+     ds.SetStart(pcbnew.VECTOR2I_MM(GetCoordinates(startx+width),GetCoordinates(starty+height)))
+     ds.SetEnd(pcbnew.VECTOR2I_MM(GetCoordinates(startx),GetCoordinates(starty+height)))
+     ds.SetLayer(pcbnew.Edge_Cuts)
      ds.SetWidth(board_width)
      board.Add(ds)
      
-     ds=pcbnew.DRAWSEGMENT(board)
-     ds.SetStart(pcbnew.wxPoint(GetCoordinates(startx),GetCoordinates(starty+height)))
-     ds.SetEnd(pcbnew.wxPoint(GetCoordinates(startx),GetCoordinates(starty)))
+     ds=pcbnew.PCB_SHAPE(board)
+     ds.SetStart(pcbnew.VECTOR2I_MM(GetCoordinates(startx),GetCoordinates(starty+height)))
+     ds.SetEnd(pcbnew.VECTOR2I_MM(GetCoordinates(startx),GetCoordinates(starty)))
+     ds.SetLayer(pcbnew.Edge_Cuts)
      ds.SetWidth(board_width)
      board.Add(ds)
 
@@ -73,14 +78,11 @@ def PlaceHoleCorners(dim_cor=10):
      y_coord[1]= g_starty+g_height-dim_cor
      board = pcbnew.GetBoard()
      global footprint_lib
-     io = pcbnew.PCB_IO()
-     point=pcbnew.wxPoint(0,0)
+     io = pcbnew.PCB_PLUGIN()
      for xx in x_coord:
          for yy in y_coord:
            mod = io.FootprintLoad(footprint_lib,hole_type )
-           point.x = GetCoordinates(xx)
-           point.y = GetCoordinates(yy)
-           mod.SetPosition(point)
+           mod.SetPosition(pcbnew.VECTOR2I_MM(GetCoordinates(xx),GetCoordinates(yy)))
            board.Add(mod)
  
          
@@ -113,8 +115,8 @@ def PlaceHoleCenter(typex=1, dim_cor=10):
      #horizontal holes
      board = pcbnew.GetBoard()
      global footprint_lib
-     io = pcbnew.PCB_IO()
-     point=pcbnew.wxPoint(0,0)
+     io = pcbnew.PCB_PLUGIN()
+     
      
      x_coord[0]=g_startx+g_width/2;
      y_coord[0]=g_starty+dim_cor;
@@ -122,9 +124,7 @@ def PlaceHoleCenter(typex=1, dim_cor=10):
      if horizont==1:
          for yy in y_coord:
             mod = io.FootprintLoad(footprint_lib, hole_type)
-            point.x = GetCoordinates(x_coord[0])
-            point.y = GetCoordinates(yy)
-            mod.SetPosition(point)
+            mod.SetPosition(pcbnew.VECTOR2I_MM(GetCoordinates(x_coord[0]),GetCoordinates(yy)))
             board.Add(mod)
 
      #vertical holes
@@ -134,9 +134,7 @@ def PlaceHoleCenter(typex=1, dim_cor=10):
      if vertic==1:
         for xx in x_coord:
             mod = io.FootprintLoad(footprint_lib, hole_type)
-            point.x = GetCoordinates(xx)
-            point.y = GetCoordinates(y_coord[0])
-            mod.SetPosition(point)
+            mod.SetPosition(pcbnew.VECTOR2I_MM(GetCoordinates(xx),y_coord[0]))
             board.Add(mod)
          
      
